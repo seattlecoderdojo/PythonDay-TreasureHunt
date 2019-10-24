@@ -6,11 +6,10 @@ Programming text-based games is a relatively common part of coding interviews. I
 
 We'll be using a slide-based deck in the workshop, but keep this window open as it will correlate with the slides and give you more details than the slides.
 
-## Slide 01: Welcome
+## Slide 01: Opening Slide
 
-This shows as you're all filing in. Please get online and go to https://REPL.it. We'll be using this as our online coding environment for Python. 
+This shows as you're all filing in. Please get online and go to https://REPL.it and the bit.ly link goes to this github repository. We'll be using this as our online coding environment for Python.
 
-If you have Python installed on your laptop and want to code in your favorite IDE, please feel free, but if you have problems with your Python installation or IDE, the mentors will not help you with those.
+## Slide 02:
 
 ## Slide 02: Repl.it
-
