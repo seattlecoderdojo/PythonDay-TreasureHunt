@@ -221,12 +221,278 @@ This will only print the list of chest positions. Can you visualize where they'd
 
 Now let's actually place some little treasure chest graphics on the board. Are they where you thought they'd be?
 
-## Slide X: The Pythagorean theorem
+## Slide 16: A little housekeeping
 
-If we add a third dot at 0,4, we have a triangle. Not only do we have a triangle, but we have a "right triangle." That's a triangle where one of the angles is a 90, degree angle, or a quarter of a circle. 
+Some functions do big things. Some perform little checks. This one is tiny. It just makes sure the move that was entered was within the bounds of the board. We'll just include it with the next block when it's lab time.
 
-The straight lines that meet to form that crisp right angle are the base and height. The third longer line that connects their ends is called the hypotenuse.
+## Slide 17: The Pythagorean theorem
 
 Way back in Ancient Greece, a mathematician named Pythagoras figured out something cool. If you took the lengths of all the lines and multiplied them by themselves to get their squares, the base's square plus the height's square would always equal the hypotenuse's square. 
 
 Which means if you know the base and the height, you don't need to take a ruler and measure the hypotenuse. You could *derive* it mathematically.
+
+If we know how far from our sonar buoy a treasure chest is in X and Y (our base and height), we can mathematically derive the hypotenuse to tell the player how far their sonar buoy is from a chest. If it's four up and three over, it's five away.
+
+## Slide 18: Handling a Player Move
+
+```python
+def makeMove(board, chests, x, y):
+    smallestDistance = 100 # Any chest will be closer than 100.
+    for cx, cy in chests:
+        distance = math.sqrt((cx - x) * (cx - x) + (cy - y) * (cy - y))
+
+        if distance < smallestDistance: # We want the closest treasure chest.
+            smallestDistance = distance
+
+    smallestDistance = round(smallestDistance)
+
+    if smallestDistance == 0:
+        # xy is directly on a treasure chest!
+        chests.remove([x, y])
+        return 'You have found a sunken treasure chest!'
+    else:
+        if smallestDistance < 10:
+            board[x][y] = str(smallestDistance)
+            return 'Treasure detected at a distance of %s from the sonar device.' % (smallestDistance)
+        else:
+            board[x][y] = 'X'
+            return 'Sonar did not detect anything. All treasure chests out of range.'
+```
+
+This may seem complicated, so we'll step through it.
+
+This function is getting the board list, the chests list, and the move to evaluate. 
+
+First we'll set a big "smallest distance" variable that we'll keep replacing as we check the distance from the move to the chests.
+
+We're going to find the *closest* chest by running through the list of chests, getting the X/Y difference between the chest's position and the sonar buoy, then using the Pythagorean Theorem to determine the distance. 
+
+NOTE: Here's where we use the math module we imported at the beginning, to use its square root function.
+
+If the chest we evaluated is closer than the "smallest distance," we'll change the number to that.
+
+Quick math question... who knows why we'll never get a negative number for the distance even if one or both of the X and Y differences are negative?
+
+What happens when you square a negative number? The square is positive. So A squared plus B squared will always be positive and the square root of that will be positive as well.
+
+So now we have the closest chest. If it's zero away, they found a chest!!!!
+
+If it's less than 10 away (between 1 and 9), we put the number where we placed the sonar buoy.
+
+If it's neither a direct hit or 1-9 away, we put an X there.
+
+And we do this by changing the value of that space in the list of our board data, then it all gets redrawn...
+
+No lab here... we're going to power through the rest of the code, then have a lab and a few questions while we play the game.
+
+## Slide 19: Getting a player move
+
+How do we get the player's choice?
+
+```python
+def enterPlayerMove(previousMoves):
+    # Let the player enter their move. Return a two-item list of int xy coordinates.
+    print('Where do you want to drop the next sonar device? (0-59 0-14) (or type quit)')
+    while True:
+        move = input()
+        if move.lower() == 'quit':
+            print('Thanks for playing!')
+            sys.exit()
+
+        move = move.split()
+        if len(move) == 2 and move[0].isdigit() and move[1].isdigit() and isOnBoard(int(move[0]), int(move[1])):
+            if [int(move[0]), int(move[1])] in previousMoves:
+                print('You already moved there.')
+                continue
+            return [int(move[0]), int(move[1])]
+
+        print('Enter a number from 0 to 59, a space, then a number from 0 to 14.')
+```
+
+Let's look at how this flows. We print a question... "where do you want to drop the next sonar device?" and offer them their choices to enter a coordinate or "quit."
+
+We start a "while True" loop. And this is one of those things that always gets me with Python, because it expects you to capitalize True while a lot of other languages don't.
+
+But a While True loop is an endless loop and it will keep running until we break it.
+
+`move = input()` will wait for input from the terminal.
+
+First we check if the user entered "quit". If they did, we break the loop by using the sys module's exit function to end the program. Remember how we imported the sys module at the beginning?
+
+If they didn't enter "quit", we split the string into a list using the `split()` method of the string. If we don't specify a separator, it uses the space as a separator. So "1 14" would be split into ["1", "14"].
+
+We make sure there are only two values, they're both digits, and the combo fits on the board.
+
+Then we check to see if the player made that move before by checking if the move is in the list of previous moved. If they did, we say "you already moved there" then "continue" starts the loop over.
+
+If the move is valid and not the same as an old one, we return the move value which breaks the while True loop.
+
+If the move isn't 'quit' and isn't valid, we remind the player how to enter a move and let the loop restart naturally.
+
+## Slide 20: Almost there... Instructions
+
+```python
+def showInstructions():
+    print('''Instructions:
+You are the captain of the Simon, a treasure-hunting ship. Your current mission
+is to use sonar devices to find three sunken treasure chests at the bottom of
+the ocean. But you only have cheap sonar that finds distance, not direction.
+
+Enter the coordinates to drop a sonar device. The ocean map will be marked with
+how far away the nearest chest is, or an X if it is beyond the sonar device's
+range. For example, the C marks are where chests are. The sonar device shows a
+3 because the closest chest is 3 spaces away.
+
+1 2 3
+012345678901234567890123456789012
+
+0 ~~~~`~```~`~``~~~``~`~~``~~~``~`~ 0
+1 ~`~`~``~~`~```~~~```~~`~`~~~`~~~~ 1
+2 `~`C``3`~~~~`C`~~~~`````~~``~~~`` 2
+3 ````````~~~`````~~~`~`````~`~``~` 3
+4 ~`~~~~`~~`~~`C`~``~~`~~~`~```~``~ 4
+
+012345678901234567890123456789012
+1 2 3
+(In the real game, the chests are not visible in the ocean.)
+
+Press enter to continue...''')
+    input()
+
+    print('''When you drop a sonar device directly on a chest, you retrieve it and the other
+sonar devices update to show how far away the next nearest chest is. The chests
+are beyond the range of the sonar device on the left, so it shows an X.
+
+1 2 3
+012345678901234567890123456789012
+
+0 ~~~~`~```~`~``~~~``~`~~``~~~``~`~ 0
+1 ~`~`~``~~`~```~~~```~~`~`~~~`~~~~ 1
+2 `~`X``7`~~~~`C`~~~~`````~~``~~~`` 2
+3 ````````~~~`````~~~`~`````~`~``~` 3
+4 ~`~~~~`~~`~~`C`~``~~`~~~`~```~``~ 4
+
+012345678901234567890123456789012
+1 2 3
+
+The treasure chests don't move around. Sonar devices can detect treasure chests
+up to a distance of 9 spaces. Try to collect all 3 chests before running out of
+sonar devices. Good luck!
+
+Press enter to continue...''')
+    input()
+```
+
+This is a function that prints the instructions, then waits for the player to hit enter. A lot of lines, but really simple.
+
+## Slide 21: The GAME LOOP
+
+The game loop ties all these functions together and runs them over and over until the player wins, loses, or quits.
+
+```python
+print('S O N A R !')
+print()
+print('Would you like to view the instructions? (yes/no)')
+if input().lower().startswith('y'):
+    showInstructions()
+
+while True:
+    # Game setup
+    sonarDevices = 20
+    theBoard = getNewBoard()
+    theChests = getRandomChests(3)
+    drawBoard(theBoard)
+    previousMoves = []
+
+    while sonarDevices > 0:
+        # Show sonar device and chest statuses.
+        print('You have %s sonar device(s) left. %s treasure chest(s) remaining.' % (sonarDevices, len(theChests)))
+
+        x, y = enterPlayerMove(previousMoves)
+        previousMoves.append([x, y]) # We must track all moves so that sonar devices can be updated.
+
+        moveResult = makeMove(theBoard, theChests, x, y)
+        if moveResult == False:
+            continue
+        else:
+            if moveResult == 'You have found a sunken treasure chest!':
+                # Update all the sonar devices currently on the map.
+                for x, y in previousMoves:
+                    makeMove(theBoard, theChests, x, y)
+            drawBoard(theBoard)
+            print(moveResult)
+
+        if len(theChests) == 0:
+            print('You have found all the sunken treasure chests! Congratulations and good game!')
+            break
+
+        sonarDevices -= 1
+
+    if sonarDevices == 0:
+        print('We\'ve run out of sonar devices! Now we have to turn the ship around and head')
+        print('for home with treasure chests still out there! Game over.')
+        print(' The remaining chests were here:')
+        for x, y in theChests:
+            print(' %s, %s' % (x, y))
+
+    print('Do you want to play again? (yes or no)')
+    if not input().lower().startswith('y'):
+        sys.exit()
+        
+```
+
+Let's run through what this does. Then we'll copy the whole thing into your REPL and try a few labs with the game... and play it.
+
+First we introduce the game and ask the player if they want instructions. If they do, we show them. Notice how the test of whether they do is that we convert everything they type into lowercase and test if the string starts with a lowercase y. They could type "yellow" or "yeah, no" and they'd get the instructions. They could type the Gettysburg Address instead of "no" and skip them.
+
+Now we start a While True loop again. This is our game loop and we'll call it out "outer loop." It will run until the player quits, breaks execution, or chooses not to play again at the end of a game.
+
+The outer loop sets up the start conditions for the game... 20 devices, 3 chests, clean new board, draws it for the first time, and sets up "previousMoves" as an empty list.
+
+Then it starts an "inner loop" that will run so long as the player has sonar devices or it's broken.
+
+The inner loop shows how many sonar devices and chests the player has left, then gets their move.
+
+The inner loop checks their move result, which updates the board. If the result is false, it jumps to the end of the loop and starts it over, which is weird, because that function should always return some result.
+
+If they found a chest, it updates all the previously dropped sonar devices with the new closest chest.
+
+Then it draws the latest version of the board, tells the player which result they had (hit, distance from latest sonar to closest chest, or no chests in range).
+
+It checks to see if they won with this move. If the player did, it prints a congratulatory message and breaks the inner loop. If not, it takes a sonar device out of inventory and then runs the inner loop (which only runs if the player has sonar devices left).
+
+After the inner loop ends, either because a win broke it or the player ran out of sonar devices, it checks to see if the player has any sonar devices left. If they don't, it tells them they lost.
+
+QUESTION: Why won't it tell the player they lost if they hit the last chest with their last sonar device?
+
+Because if the player wins, the inner loop breaks before the last sonar device is removed from their inventory.
+
+The game asks the player if they want to play again and checks if their answer starts with Y. If it does, the outer loop runs again, setting up a new game board, new treasure chest locations, etc. If not, `sys.break()` breaks the outer loop and the game ends.
+
+
+
+## Slide 22: Get the game running
+
+The slide shows the link to this repository. You can copy the full game out of the [fullgame.py](fullgame.py) file.
+
+## Slide 23: Brain Teasers
+
+We have four brain teasers to end the workshop. "**Of** **each** **of** **these,** **would it be easy or hard to change it?**"
+
+1: The number of chests?
+
+​	Easy, It's set with a variable.
+
+2: The number of sonar devices?
+
+​	Also easy, they're set with a variable.
+
+3: The game board size?
+
+​	Hard. Its values are hard-coded into the game board creation and drawing routines. You would need to do a nit insignificant amount of refactoring to make those be controlled by variables.
+
+4: The Pythagorean theorem?
+
+​	Trick question. It's math. You can't change it.
+
+Thanks for coming. Hope you had fun.
