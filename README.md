@@ -10,6 +10,12 @@ We'll be using a slide-based deck in the workshop, but keep this window open as 
 
 This shows as you're all filing in. Please get online and go to https://REPL.it and the bit.ly link goes to this github repository. We'll be using this as our online coding environment for Python.
 
-## Slide 02:
+## Slide 02: Welcome
 
-## Slide 02: Repl.it
+The exercise we're doing, "Sonar Treasure Hunt" is by Al Sweigart, from his book "[Invent Your Own Computer Games with Python - 4th Edition](https://inventwithpython.com/invent4thed)." It is used with permission thanks to his Creative Commons licensing on all his books.
+
+![Invent Your Own Computer Games cover](images/ivnewgames.jpg)
+
+
+
+## Slide 03: Repl.it
