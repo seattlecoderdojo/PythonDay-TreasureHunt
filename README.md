@@ -489,7 +489,7 @@ We have four brain teasers to end the workshop. "**Of** **each** **of** **these,
 
 3: The game board size?
 
-​	Hard. Its values are hard-coded into the game board creation and drawing routines. You would need to do a nit insignificant amount of refactoring to make those be controlled by variables.
+​	Hard. Its values are hard-coded into the game board creation and drawing routines. You would need to do a not insignificant amount of refactoring to make those be controlled by variables.
 
 4: The Pythagorean theorem?
 
